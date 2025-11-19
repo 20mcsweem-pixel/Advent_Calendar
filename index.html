@@ -70,11 +70,53 @@
     @keyframes fall {
       to { transform: translateY(110vh); }
     }
-  </style>
+    /* Frosted screen edges */
+  body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      box-shadow: inset 0 0 60px 20px rgba(255,255,255,0.3), inset 0 0 120px 40px rgba(200,220,255,0.25);
+      z-index: 10;
+  }
+  /* String Lights Border */
+  #stringLights {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 15;
+  }
+  .bulb {
+      position: absolute;
+      width: 10px;
+      height: 16px;
+      border-radius: 50%;
+      background: red;
+      box-shadow: 0 0 12px red;
+      animation: glow 1.5s infinite alternate;
+  }
+  @keyframes glow {
+      from { opacity: 0.5; transform: scale(1); }
+      to { opacity: 1; transform: scale(1.3); }
+  }
+</style>
 </head>
 <body>
 
-  <h1>🎄 Advent Calendar 🎄</h1>
+  <div style="position:relative; display:inline-block; margin-top:20px;">
+  <!-- Hooks -->
+  
+  
+
+  <h1 style="font-size:2.7rem;font-weight:900;font-family:'Georgia',serif; letter-spacing:1px; text-shadow:0 4px 12px rgba(0,0,0,0.4); transform: perspective(400px) rotateX(8deg); padding:10px 20px; display:inline-block; background:rgba(255,255,255,0.1); border-radius:12px;">Advent Calendar</h1>
+</div>
+<h2 id="dayDisplay" style="margin-top:5px;font-size:1.9rem;font-weight:600;font-family:'Georgia',serif;text-shadow:0 0 10px #ffe6e6;transform:rotate(0.5deg);"></h2>
   <button id="claimBtn">Claim Chocolate</button>
   <div id="message"></div>
 
@@ -178,7 +220,54 @@
     });
 
     checkStatus();
-  </script>
+  
+    // Advent Day Display
+    function updateDay() {
+        const now = new Date();
+        const month = now.getMonth() + 1; // JS months are 0–11
+        const date = now.getDate();
 
+        let adventDay;
+        if (month === 12) {
+            adventDay = date; // Dec 1 -> 1, Dec 24 -> 24
+        } else {
+            adventDay = date; // November: just use normal date
+        }
+
+        document.getElementById("dayDisplay").textContent = `Day ${adventDay}`;
+    }
+    updateDay();
+
+    // Generate string lights around the border
+    function createLights() {
+        const container = document.getElementById('stringLights');
+        const bulbCount = 40;
+        for (let i = 0; i < bulbCount; i++) {
+            const bulb = document.createElement('div');
+            bulb.classList.add('bulb');
+            const edge = Math.floor(i / (bulbCount / 4));
+            const pos = (i % (bulbCount / 4)) / (bulbCount / 4);
+            let x = 0, y = 0;
+            if (edge === 0) { x = pos * 100; y = 0; }
+            if (edge === 1) { x = 100; y = pos * 100; }
+            if (edge === 2) { x = (1 - pos) * 100; y = 100; }
+            if (edge === 3) { x = 0; y = (1 - pos) * 100; }
+            bulb.style.left = x + 'vw';
+            bulb.style.top = y + 'vh';
+
+            const colors = ['red', 'gold', 'green', 'blue'];
+            const color = colors[i % colors.length];
+            bulb.style.background = color;
+            bulb.style.boxShadow = `0 0 12px ${color}`;
+            bulb.style.animationDelay = (Math.random() * 1.5) + 's';
+
+            container.appendChild(bulb);
+        }
+    }
+    createLights();
+</script>
+
+  <!-- Border String Lights -->
+  <div id="stringLights"></div>
 </body>
 </html>
