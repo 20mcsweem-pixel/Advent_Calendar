@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>🎄 Christmas Light Switch 🎄</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #b30000;
+      color: white;
+      text-align: center;
+      padding: 50px;
+    }
+    button {
+      margin: 20px;
+      padding: 20px;
+      font-size: 20px;
+      border: none;
+      border-radius: 10px;
+      background: #00ff88;
+      cursor: pointer;
+    }
+    button:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎅 Christmas ESP32 Light Controller 🎄</h1>
+
+  <button onclick="lightOn()">Turn Light ON</button>
+  <button onclick="lightOff()">Turn Light OFF</button>
+
+  <script>
+    // >>>> Change this to your ESP32's IP address <<<<
+    const ESP32_IP = "http://192.168.0.41";
+
+    function lightOn() {
+      fetch(`${ESP32_IP}/on`)
+        .catch(err => alert("ESP32 not reachable!"));
+    }
+
+    function lightOff() {
+      fetch(`${ESP32_IP}/off`)
+        .catch(err => alert("ESP32 not reachable!"));
+    }
+  </script>
+
+</body>
+</html>
