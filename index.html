@@ -1,49 +1,183 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>🎄 Christmas Light Switch 🎄</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advent Calendar</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #b30000;
+      margin: 0;
+      padding: 0;
+      background: #0b1c2c;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
       color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
       text-align: center;
-      padding: 50px;
     }
-    button {
-      margin: 20px;
-      padding: 20px;
-      font-size: 20px;
+
+    /* LED border */
+    .led {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: red;
+      animation: glow 2s infinite;
+      box-shadow: 0 0 10px red;
+    }
+
+    @keyframes glow {
+      0% { opacity: 0.3; }
+      50% { opacity: 1; }
+      100% { opacity: 0.3; }
+    }
+
+    #claimBtn {
+      background: #ff1c44;
+      padding: 20px 40px;
       border: none;
-      border-radius: 10px;
-      background: #00ff88;
+      border-radius: 20px;
+      font-size: 1.6rem;
+      color: white;
       cursor: pointer;
+      box-shadow: 0 0 15px rgba(255, 0, 70, 0.7);
+      transition: 0.3s;
     }
-    button:active {
+
+    #claimBtn:active {
       transform: scale(0.95);
+    }
+
+    #message {
+      margin-top: 20px;
+      font-size: 1.2rem;
+    }
+
+    /* Snow */
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      color: white;
+      font-size: 1rem;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      to { transform: translateY(110vh); }
     }
   </style>
 </head>
 <body>
 
-  <h1>🎅 Christmas ESP32 Light Controller 🎄</h1>
-
-  <button onclick="lightOn()">Turn Light ON</button>
-  <button onclick="lightOff()">Turn Light OFF</button>
+  <h1>🎄 Advent Calendar 🎄</h1>
+  <button id="claimBtn">Claim Chocolate</button>
+  <div id="message"></div>
 
   <script>
-    // >>>> Change this to your ESP32's IP address <<<<
-    const ESP32_IP = "http://192.168.0.41";
+    /* =============================
+       LED STRING GENERATION
+       ============================= */
+    const colors = ["red", "green", "blue", "yellow", "cyan", "magenta"];
 
-    function lightOn() {
-      fetch(`${ESP32_IP}/on`)
-        .catch(err => alert("ESP32 not reachable!"));
+    function createLEDs() {
+      const spacing = 35; // pixels between LEDs
+
+      // top
+      for (let x = 0; x < window.innerWidth; x += spacing) {
+        placeLED(x, 0);
+      }
+      // bottom
+      for (let x = 0; x < window.innerWidth; x += spacing) {
+        placeLED(x, window.innerHeight - 10);
+      }
+      // left
+      for (let y = 0; y < window.innerHeight; y += spacing) {
+        placeLED(0, y);
+      }
+      // right
+      for (let y = 0; y < window.innerHeight; y += spacing) {
+        placeLED(window.innerWidth - 10, y);
+      }
     }
 
-    function lightOff() {
-      fetch(`${ESP32_IP}/off`)
-        .catch(err => alert("ESP32 not reachable!"));
+    function placeLED(x, y) {
+      const led = document.createElement("div");
+      led.className = "led";
+      led.style.left = x + "px";
+      led.style.top = y + "px";
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      led.style.background = color;
+      led.style.boxShadow = `0 0 10px ${color}`;
+      led.style.animationDuration = (1.5 + Math.random() * 1.5) + "s";
+      document.body.appendChild(led);
     }
+
+    createLEDs();
+
+    /* =============================
+       SNOWFALL
+       ============================= */
+    function createSnow() {
+      const snow = document.createElement("div");
+      snow.className = "snowflake";
+      snow.innerText = "❄";
+      snow.style.left = Math.random() * window.innerWidth + "px";
+      snow.style.fontSize = (8 + Math.random() * 20) + "px";
+      snow.style.animationDuration = (4 + Math.random() * 6) + "s";
+      document.body.appendChild(snow);
+      setTimeout(() => snow.remove(), 11000);
+    }
+
+    setInterval(createSnow, 150);
+
+    /* =============================
+       CLAIM CHOCOLATE BUTTON LOGIC
+       ============================= */
+    const btn = document.getElementById("claimBtn");
+    const message = document.getElementById("message");
+
+    function secondsUntilMidnight() {
+      const now = new Date();
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0);
+      return Math.floor((midnight - now) / 1000);
+    }
+
+    function updateCountdown() {
+      const sec = secondsUntilMidnight();
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      message.textContent = `Come back in ${h}h ${m}m ${s}s`;
+    }
+
+    function checkStatus() {
+      const last = localStorage.getItem("claimedDate");
+      const today = new Date().toDateString();
+
+      if (last === today) {
+        btn.disabled = true;
+        btn.textContent = "Already claimed";
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+      }
+    }
+
+    btn.addEventListener("click", () => {
+      const today = new Date().toDateString();
+      localStorage.setItem("claimedDate", today);
+      btn.disabled = true;
+      btn.textContent = "Already claimed";
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
+    });
+
+    checkStatus();
   </script>
 
 </body>
